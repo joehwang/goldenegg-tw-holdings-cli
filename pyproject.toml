@@ -1,0 +1,19 @@
+[project]
+name = "golden-egg"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "esun-trade",
+    "fubon-neo",
+    "masterlink-sdk",
+    "pandas>=2.3.1",
+    "requests>=2.32.4",
+    "shioaji>=1.2.6",
+]
+
+[tool.uv.sources]
+esun-trade = { path = "borker/esun/esun_trade-2.0.0-cp37-abi3-macosx_11_0_arm64.whl" }
+fubon-neo = { path = "borker/fubon/fubon_neo-2.2.2-cp37-abi3-macosx_11_0_arm64.whl" }
+masterlink-sdk = { path = "borker/masterlink/masterlink_sdk-1.0.1-cp37-abi3-macosx_11_0_arm64.whl" }
