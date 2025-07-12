@@ -1,5 +1,5 @@
-#! /bin/bash
 #!/bin/bash
+# source start.sh 讓程式直接修改這個終端機的變數
 if [ ! -d ".venv" ]; then
   echo "⚠️  .venv 不存在，是否需要先執行 uv init 或 uv venv .venv？"
   exit 1

@@ -17,3 +17,8 @@ dependencies = [
 esun-trade = { path = "borker/esun/esun_trade-2.0.0-cp37-abi3-macosx_11_0_arm64.whl" }
 fubon-neo = { path = "borker/fubon/fubon_neo-2.2.2-cp37-abi3-macosx_11_0_arm64.whl" }
 masterlink-sdk = { path = "borker/masterlink/masterlink_sdk-1.0.1-cp37-abi3-macosx_11_0_arm64.whl" }
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.1",
+]

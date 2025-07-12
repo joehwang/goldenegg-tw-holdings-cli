@@ -58,7 +58,11 @@ cd golden-egg
 source .venv/bin/activate  # macOS/Linux
 # 安裝依賴
 uv sync
+
+或是
+source ./start.sh
 ```
+
 
 ## UV 基本用法
 

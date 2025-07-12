@@ -6,3 +6,4 @@
 borker/esun/config.ini
 borker/esun/config.simulation.ini
 borker/masterlink/Configs/SYS_SOLACE.ini
+__pycache__
