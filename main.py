@@ -1,6 +1,5 @@
-def main():
-    print("Hello from golden-egg!")
+from config.settings import settings
 
+print(settings.get_esun_settings().config)
 
-if __name__ == "__main__":
-    main()
+print(settings.get_fubon_settings().login_id)

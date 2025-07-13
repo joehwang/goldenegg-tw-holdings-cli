@@ -141,3 +141,27 @@ python main.py
 ## 授權
 
 [在此填入授權資訊]
+
+## TODO
+- test case裡私隱資訊要做成.env
+
+在ESUN的docker compose yml看到
+```yaml
+#這行環境變數的意思是：
+##	•	設定 PYTHON_KEYRING_BACKEND 為 keyrings.cryptfile.cryptfile.CryptFileKeyring
+#	•	這代表 Python 的 keyring 模組 將會使用 CryptFileKeyring 作為後端。
+#	•	CryptFileKeyring 是一個以加密方式儲存憑證（像是 API Token、帳號密碼）的 keyring 實作。
+services:
+  app:
+    build:
+      context: .
+      dockerfile: DockerFile
+    environment:
+      - PYTHON_KEYRING_BACKEND=keyrings.cryptfile.cryptfile.CryptFileKeyring
+    volumes:
+      - .:/app
+      - python_keyring:/root/.local/share/python_keyring
+
+volumes:
+  python_keyring:
+```
