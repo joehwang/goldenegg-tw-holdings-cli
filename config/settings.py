@@ -1,11 +1,32 @@
 from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
+from configparser import ConfigParser
+from pathlib import Path
+
 
 class EsunSettings(BaseSettings):
-    config: str = ""
+    config_file: str = ""
     model_config = ConfigDict(
         env_prefix="ESUN_"
     )
+
+    def create_sdk(self):
+        """建立玉山 SDK 實例"""
+        from esun_trade.sdk import SDK
+        project_root = Path(__file__).parent.parent
+        config_path = project_root / "borker" / "esun" / self.config_file
+        # 讀取設定檔
+        config = ConfigParser()
+        config.read(config_path)
+
+        # 將憑證路徑轉換為絕對路徑
+        if config.has_section('Cert') and config.has_option('Cert', 'Path'):
+            cert_relative_path = config.get('Cert', 'Path')
+            cert_absolute_path = project_root / "borker" / "esun" / cert_relative_path
+            config.set('Cert', 'Path', str(cert_absolute_path))
+
+        return SDK(config)
+    
 
 class FubonSettings(BaseSettings):
     login_id: str=""

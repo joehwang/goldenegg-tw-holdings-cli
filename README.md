@@ -2,7 +2,11 @@
 
 一個整合多個券商 API 的 Python 專案，提供統一的交易介面。
 
-## 在根目錄的.env可以設定是否測試帳號
+## 注意
+
+- fubon測試: pytest test/test_fubon_integration.py -v -s 
+- 在根目錄的.env可以設定是否測試帳號
+
 
 ## 專案特色
 
