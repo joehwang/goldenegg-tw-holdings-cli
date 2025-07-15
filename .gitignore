@@ -9,3 +9,5 @@ borker/masterlink/Configs/SYS_SOLACE.ini
 __pycache__
 .env
 .env.test
+borker/sinopac/.env
+borker/sinopac/.env
