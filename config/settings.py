@@ -45,6 +45,19 @@ class FubonSettings(BaseSettings):
             return FubonSDK(30, 2, url=self.login_url)
         else:
             return FubonSDK()
+        
+class MasterlinkSettings(BaseSettings):
+    login_id: str = ""
+    login_pwd: str = ""
+    cert_file: str = ""
+    cert_pwd: str = ""
+    model_config = ConfigDict(
+        env_prefix="MASTERLINK_"
+    )
+
+    def create_sdk(self):
+        from masterlink_sdk import MasterlinkSDK
+        return MasterlinkSDK()
 
 class Settings(BaseSettings):
     app_name: str = "Golden Egg"
@@ -73,6 +86,14 @@ class Settings(BaseSettings):
         else:
             env_file = "borker/fubon/.env"  
         return FubonSettings(_env_file=env_file)
+
+    def get_masterlink_settings(self) -> MasterlinkSettings:
+        """動態載入元富證券設定"""
+        if self.egg_debug:
+            env_file = "borker/masterlink/.env.test"      
+        else:
+            env_file = "borker/masterlink/.env"  
+        return MasterlinkSettings(_env_file=env_file)
 
 
 settings = Settings() 

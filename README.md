@@ -1,6 +1,7 @@
 # Golden Egg
 
-一個整合多個券商 API 的 Python 專案，提供統一的交易介面。
+一個整合多個券商 API 的 Python 專案，提供統一取得股票庫存介面
+並實現MCP SERVER讓MCP HOST的LLM理解目前的股票庫存並進行股票的分析
 
 ## 注意
 
@@ -32,10 +33,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-### 使用 pip 安裝
-```bash
-pip install uv
-```
+
 
 ## 專案啟動
 
@@ -171,3 +169,7 @@ services:
 volumes:
   python_keyring:
 ```
+
+## 卷商文件
+
+- 元富(masterlink): https://ml-fugle-api.masterlink.com.tw/FugleSDK/
