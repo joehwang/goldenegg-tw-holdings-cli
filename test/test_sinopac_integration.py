@@ -3,13 +3,13 @@ import os
 from pathlib import Path
 import shioaji as sj
 from config.settings import settings  # 加入 import
-class TestShiopacIntegration:
+class TestSinopacIntegration:
     """整合測試 - 測試真實的 shioaji (永豐金) API 連線"""
 
     def setup_method(self):
         """每個測試方法執行前的設定"""
         self.project_root = Path(__file__).parent.parent
-        self.settings = settings.get_shiopac_settings()
+        self.settings = settings.get_sinopac_settings()
         
 
     def test_sdk_import(self):

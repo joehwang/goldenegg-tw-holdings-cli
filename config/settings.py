@@ -59,13 +59,13 @@ class MasterlinkSettings(BaseSettings):
         from masterlink_sdk import MasterlinkSDK
         return MasterlinkSDK()
 
-class ShiopacSettings(BaseSettings):
+class SinopacSettings(BaseSettings):
     api_key: str = ""
     api_secret: str = ""
     simulation: bool = True
 
     model_config = ConfigDict(
-        env_prefix="SHINOPAC_"
+        env_prefix="SINOPAC_"
     )
     def create_sdk(self):
         import shioaji as sj
@@ -107,13 +107,13 @@ class Settings(BaseSettings):
             env_file = "borker/masterlink/.env"  
         return MasterlinkSettings(_env_file=env_file)
 
-    def get_shiopac_settings(self) -> ShiopacSettings:
+    def get_sinopac_settings(self) -> SinopacSettings:
         """動態載入永豐金證券設定"""
         if self.egg_debug:
             env_file = "borker/sinopac/.env.test"      
         else:
             env_file = "borker/sinopac/.env"
-        return ShiopacSettings(_env_file=env_file)
+        return SinopacSettings(_env_file=env_file)
 
 
 settings = Settings() 
