@@ -10,7 +10,7 @@ from config.settings import settings
 
 
 # 取得永豐金設定
-sinopac_settings = settings.get_shiopac_settings()
+sinopac_settings = settings.get_sinopac_settings()
 print(sinopac_settings)
 
 # 建立 API 實例
@@ -23,3 +23,11 @@ print(accounts)
 # 查詢帳號列表
 account_list = api.list_accounts()
 print(account_list)
+
+result = api.activate_ca(
+    ca_path=str(Path(__file__).parent / sinopac_settings.cert_file),
+    ca_passwd=sinopac_settings.cert_pwd,
+    person_id=sinopac_settings.person_id,
+)
+
+print(result)

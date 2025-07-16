@@ -8,9 +8,14 @@ class TestSinopacIntegration:
 
     def setup_method(self):
         """每個測試方法執行前的設定"""
-        self.project_root = Path(__file__).parent.parent
-        self.settings = settings.get_sinopac_settings()
         
+        # 取得專案根目錄
+        self.project_root = Path(__file__).parent.parent
+
+        self.cert_path = self.project_root / "borker" / "sinopac"
+        self.settings = settings.get_sinopac_settings()
+
+
 
     def test_sdk_import(self):
         """測試 SDK 模組匯入"""
@@ -24,6 +29,20 @@ class TestSinopacIntegration:
         """測試 SDK 物件建立"""
         api = self.settings.create_sdk()
         assert api is not None, "SDK 建立失敗"
+
+    def test_activate_ca(self):
+        """測試activate憑證"""
+        api = self.settings.create_sdk()
+
+        accounts = api.login(self.settings.api_key, self.settings.api_secret)
+        result = api.activate_ca(
+            ca_path=str(self.cert_path / self.settings.cert_file),
+            ca_passwd=self.settings.cert_pwd,
+            person_id=self.settings.person_id)
+     
+        assert result is not None, "activate憑證失敗"
+        print("✅ activate憑證成功")
+        print(result)
 
     def test_login(self):
         """測試登入 shioaji"""

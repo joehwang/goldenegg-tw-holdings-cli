@@ -63,6 +63,9 @@ class SinopacSettings(BaseSettings):
     api_key: str = ""
     api_secret: str = ""
     simulation: bool = True
+    cert_file: str = ""
+    cert_pwd: str = ""
+    person_id: str = ""
 
     model_config = ConfigDict(
         env_prefix="SINOPAC_"
