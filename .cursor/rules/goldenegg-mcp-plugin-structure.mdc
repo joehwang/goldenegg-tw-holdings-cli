@@ -1,0 +1,296 @@
+🥚 GoldenEgg MCP Plugin — 專案文件（2025-07-17）
+
+📌 專案目標
+
+GoldenEgg 是一個符合 Model Context Protocol (MCP) 架構的 Plugin，專門處理 持股資訊的儲存與查詢任務。它不負責 OCR 或資料解析，而是專注於與 LLM Agent 工具鏈整合，成為持股資料的 標準化儲存與取得介面。
+
+⸻
+
+🧩 解決的問題
+
+🔍 背景問題
+	•	LLM 工具或使用者可經由圖片、PDF 等方式辨識對帳單，但這些資訊無法持久化記憶，每次都要重新辨識。
+	•	各券商 API 的存股資料查詢機制不一致，且格式各異，不利於整合。
+	•	缺乏一個符合 AI Agent 生態的、標準化的持股資訊 Plugin，可供 GPT、n8n、Cursor 等 LLM 工具鏈串接。
+
+✅ GoldenEgg 解法
+	•	📥 接收 LLM 已解析完成的持股資訊（JSON），統一格式儲存。
+	•	📤 支援查詢歷史持股紀錄（OCR 上傳後記憶）、或即時透過券商 API 取得。
+	•	🔁 統一資料輸出格式，便於 LLM 工具分析、視覺化與自動化處理。
+	•	🔌 作為 MCP Plugin 掛載於 MCP Server，可與任何 LLM Agent 無縫串接。
+
+⸻
+
+🏗️ 系統架構設計
+
+┌────────────┐         ┌──────────────────────┐        ┌────────────────────┐
+│ LLM Agent  │──save→ │ GoldenEgg MCP Plugin │──→ save│ 儲存已解析持股資訊  │
+│（OCR+分析）│         │（MCP 指令：save_holdings）│     │（JSON 格式）         │
+└────────────┘         └──────────────────────┘        └────────────────────┘
+
+┌────────────┐         ┌──────────────────────┐        ┌────────────────────┐
+│ LLM Agent  │──call→ │ GoldenEgg MCP Plugin │──→ get │ 查詢券商或歷史資料  │
+│（流程控制）│         │（MCP 指令：get_holdings）│     │（統一格式 JSON）     │
+└────────────┘         └──────────────────────┘        └────────────────────┘
+
+
+⸻
+
+⚙️ Plugin 架構與目錄結構
+
+goldenegg-mcp/
+├── goldenegg/
+│   ├── broker/         # 券商 API 模組（plugin-aware）
+│   ├── schema/         # 持股資料格式驗證
+├── mcp_plugin/
+│   └── goldenegg_plugin.py  # MCP plugin entry point
+├── test/               # pytest 測試
+├── pyproject.toml      # MCP plugin metadata
+└── start.sh            # 啟動 script
+
+
+⸻
+
+🧾 Plugin 支援的指令
+
+1. save_holdings
+
+用途：儲存 OCR 或其他方式解析完的持股資料
+
+參數	類型	必填	說明
+source	string	✅	資料來源（如 “ocr”）
+data	list[object]	✅	持股清單陣列（符合 schema）
+
+🔁 回傳：
+
+{ "status": "ok", "id": "ocr_20250716_01" }
+
+
+⸻
+
+2. get_holdings
+
+用途：查詢使用者的持股清單（來源為 broker 或 OCR）
+
+參數	類型	必填	說明
+source	string	✅	“broker” 或 “ocr”
+broker	string	⛔️	僅在 source 為 broker 時需要
+id	string	⛔️	指定已儲存的 OCR 資料 ID（可選）
+
+📤 回傳：統一持股 JSON 陣列
+
+⸻
+
+🧮 輸出資料格式
+
+[
+  {
+    "symbol": "2330.TW",
+    "name": "台積電",
+    "shares": 1000,
+    "avg_cost": 580.0,
+    "currency": "TWD",
+    "source": "broker",
+    "retrieved_at": "2025-07-16T12:00:00+08:00"
+  }
+]
+
+欄位說明：
+
+欄位	類型	說明
+symbol	string	股票代號（含市場）
+name	string	公司名稱
+shares	int	持股數量
+avg_cost	float	平均成本
+currency	string	幣別（如 “TWD”）
+source	string	資料來源（“ocr” / “broker”）
+retrieved_at	datetime	ISO 8601 格式時間戳
+
+
+⸻
+
+🚀 使用方式
+
+pip install mcp-server
+mcp-server run mcp_plugin.goldenegg_plugin
+
+或使用：
+
+bash start.sh
+
+
+⸻
+
+🧪 測試策略
+
+採用 pytest 單元測試，涵蓋：
+	•	save_holdings() 輸入格式驗證與資料儲存行為
+	•	get_holdings() 參數處理、broker 整合與歷史查詢行為
+	•	錯誤處理測試（如 broker 錯誤、OCR ID 找不到）
+
+以下是符合你目前設計的 README.md 與 pyproject.toml 範例，已移除 OCR fallback 與 CLI 功能，聚焦在 MCP plugin 使用場景：
+
+⸻
+
+📘 README.md
+
+# 🥚 GoldenEgg MCP Plugin
+
+**GoldenEgg** 是一個符合 [Model Context Protocol (MCP)](https://modelcontextprotocol.io) 標準的 plugin，用於處理「持股資訊」的儲存與查詢。它專為 AI agent 而設計，提供統一資料格式，支援多家台灣券商 API，以及記憶 LLM OCR 傳入的持股清單。
+
+---
+
+## 🎯 功能特色
+
+- 📤 儲存來自 OCR/LLM 的持股清單（`save_holdings`）
+- 🔁 查詢已儲存的 OCR 結果或即時透過券商 API 查詢（`get_holdings`）
+- 🧱 輸出統一 JSON 格式，方便 GPT、n8n、Airbyte 等工具解析
+- 🧩 可作為 plugin 掛載至 MCP Server
+
+---
+
+## 🧑‍💻 安裝與啟動
+
+### 安裝 MCP Server
+
+```bash
+pip install mcp-server
+
+啟動 GoldenEgg plugin
+
+mcp-server run mcp_plugin.goldenegg_plugin
+# 或使用 start.sh
+bash start.sh
+
+
+⸻
+
+🧾 指令支援
+
+save_holdings
+
+用於儲存 OCR 後的持股資料。
+
+{
+  "command": "save_holdings",
+  "args": {
+    "source": "ocr",
+    "data": [
+      {
+        "symbol": "2330.TW",
+        "name": "台積電",
+        "shares": 1000,
+        "avg_cost": 580.0,
+        "currency": "TWD",
+        "retrieved_at": "2025-07-16T12:00:00+08:00"
+      }
+    ]
+  }
+}
+
+
+⸻
+
+get_holdings
+
+查詢持股資訊。來源可為：
+	•	"ocr"：查詢已儲存的 JSON（可指定 ID）
+	•	"broker"：查詢指定券商 API
+
+{
+  "command": "get_holdings",
+  "args": {
+    "source": "broker",
+    "broker": "fubon"
+  }
+}
+
+或查詢 OCR 儲存紀錄：
+
+{
+  "command": "get_holdings",
+  "args": {
+    "source": "ocr",
+    "id": "ocr_20250716_01"
+  }
+}
+
+
+⸻
+
+🧱 資料格式
+
+統一輸出格式如下：
+
+[
+  {
+    "symbol": "2330.TW",
+    "name": "台積電",
+    "shares": 1000,
+    "avg_cost": 580.0,
+    "currency": "TWD",
+    "source": "ocr",
+    "retrieved_at": "2025-07-16T12:00:00+08:00"
+  }
+]
+
+
+⸻
+
+📦 支援券商一覽
+
+券商	模組名稱	狀態
+富邦證券	fubon	✅ 已整合
+永豐證券	sinopac	✅ 已整合
+元大證券	masterlink	✅ 已整合
+玉山證券	esun	✅ 已整合
+
+
+⸻
+
+🧪 測試方式
+
+pytest test/
+
+
+⸻
+
+🔖 Plugin Metadata
+
+請參考 pyproject.toml：
+
+---
+
+## 📦 `pyproject.toml`
+
+```toml
+[tool.poetry]
+name = "goldenegg-mcp"
+version = "0.1.0"
+description = "提供持股資訊查詢與記憶的 MCP Plugin"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{ include = "goldenegg" }, { include = "mcp_plugin" }]
+
+[tool.mcp.plugin]
+name = "goldenegg"
+version = "0.1.0"
+description = "提供持股查詢與儲存的 MCP 插件"
+entrypoint = "mcp_plugin.goldenegg_plugin"
+commands = ["save_holdings", "get_holdings"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+mcp-server = "^0.2.0"
+pydantic = "^2.0"
+httpx = "^0.27.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+⸻
+
+這份 README + pyproject.toml 可直接配合你現在的 plugin 使用。
+如需補上實作範例的 goldenegg_plugin.py scaffold，我也可以幫你寫好基本架構。是否需要？
