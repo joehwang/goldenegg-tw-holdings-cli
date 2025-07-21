@@ -49,18 +49,48 @@ GoldenEgg 是一個符合 Model Context Protocol (MCP) 架構的 Plugin，專門
 
 ### 目錄結構
 ```
-goldenegg-mcp/
-├── goldenegg/
-│   ├── broker/         # 每家券商為一個 plugin module
-│   ├── ocr/            # OCR 模組同樣 plugin 化
-│   └── schema/         # 資料 schema 標準
+goldenegg/
+├── broker/                 
+│   ├── base.py             ← BrokerClient interface
+│   ├── esun/
+│   │   └── client.py       ← 實作 EsunClient(BrokerClient)
+│   ├── fubon/
+│   │   └── client.py
+│   ├── masterlink/
+│   │   └── client.py
+│   └── sinopac/
+│       └── client.py
+├── ocr/                    ← OCR 解析模組
+│   ├── base.py
+│   └── fubon.py
+├── schema/
+│   └── holding.py          ← Pydantic Holding model
+├── service/
+│   └── holding_service.py  ← 聚合邏輯 / 封裝 tool 呼叫
+├── utils/
+│   └── logger.py           ← 共用函數或日誌
 ├── mcp_plugin/
-│   └── goldenegg_plugin.py  # FastMCP server 主程式
-├── test/               # pytest 測試
-├── pyproject.toml      # metadata 設定
-└── start.sh            # 啟動腳本
+│   └── goldenegg_plugin.py ← FastMCP tool 專責暴露 get_holdings()
+├── test/
+│   ├── integration/
+│   │   └── test_esun.py    ← 真憑證 + 全流程測試
+│   ├── unit/
+│   │   └── test_holding_service.py
+│   └── factories/
+│       └── mock_broker_client.py
+├── pyproject.toml          ← 插件 metadata 定義
+├── README.md
+└── start.sh
 ```
-
+┌─────────────────────────────────────┐
+│        MCP 暴露層 (Presentation)     │  ← mcp_plugin/
+├─────────────────────────────────────┤
+│        業務邏輯層 (Business)         │  ← service/
+├─────────────────────────────────────┤
+│        適配器層 (Adapter)           │  ← broker/
+├─────────────────────────────────────┤
+│        資料模型層 (Domain)           │  ← schema/
+└─────────────────────────────────────┘
 ⸻
 
 ## 🔧 FastMCP 四大核心元件設計
