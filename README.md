@@ -31,7 +31,7 @@
 
 
 ## 注意
-
+- 測試所有integration test `pytest -W ignore::DeprecationWarning  -v -s`
 - fubon測試: pytest test/test_fubon_integration.py -v -s 
 - 在根目錄的.env可以設定是否測試帳號
 
