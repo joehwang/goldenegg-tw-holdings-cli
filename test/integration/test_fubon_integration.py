@@ -9,9 +9,8 @@ class TestFubonIntegration:
     def setup_method(self):
         """每個測試方法執行前的設定"""
         # 取得專案根目錄
-        self.project_root = Path(__file__).parent.parent
-        
-        self.cert_path = self.project_root / "borker" / "fubon" 
+        self.project_root = Path(__file__).parent.parent.parent
+        self.cert_path = self.project_root / "broker" / "fubon" 
         self.settings = settings.get_fubon_settings()  # 使用 settings 實例
            
     def test_certificate_file_exists(self):

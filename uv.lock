@@ -159,7 +159,7 @@ wheels = [
 [[package]]
 name = "esun-trade"
 version = "2.0.0"
-source = { path = "borker/esun/esun_trade-2.0.0-cp37-abi3-macosx_11_0_arm64.whl" }
+source = { path = "broker/esun/esun_trade-2.0.0-cp37-abi3-macosx_11_0_arm64.whl" }
 dependencies = [
     { name = "keyring" },
     { name = "keyrings-cryptfile" },
@@ -188,7 +188,7 @@ wheels = [
 [[package]]
 name = "fubon-neo"
 version = "2.2.2"
-source = { path = "borker/fubon/fubon_neo-2.2.2-cp37-abi3-macosx_11_0_arm64.whl" }
+source = { path = "broker/fubon/fubon_neo-2.2.2-cp37-abi3-macosx_11_0_arm64.whl" }
 dependencies = [
     { name = "pyee" },
     { name = "requests" },
@@ -228,9 +228,9 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "esun-trade", path = "borker/esun/esun_trade-2.0.0-cp37-abi3-macosx_11_0_arm64.whl" },
-    { name = "fubon-neo", path = "borker/fubon/fubon_neo-2.2.2-cp37-abi3-macosx_11_0_arm64.whl" },
-    { name = "masterlink-sdk", path = "borker/masterlink/masterlink_sdk-1.0.1-cp37-abi3-macosx_11_0_arm64.whl" },
+    { name = "esun-trade", path = "broker/esun/esun_trade-2.0.0-cp37-abi3-macosx_11_0_arm64.whl" },
+    { name = "fubon-neo", path = "broker/fubon/fubon_neo-2.2.2-cp37-abi3-macosx_11_0_arm64.whl" },
+    { name = "masterlink-sdk", path = "broker/masterlink/masterlink_sdk-1.0.1-cp37-abi3-macosx_11_0_arm64.whl" },
     { name = "pandas", specifier = ">=2.3.1" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
     { name = "requests", specifier = ">=2.32.4" },
@@ -346,7 +346,7 @@ wheels = [
 [[package]]
 name = "masterlink-sdk"
 version = "1.0.1"
-source = { path = "borker/masterlink/masterlink_sdk-1.0.1-cp37-abi3-macosx_11_0_arm64.whl" }
+source = { path = "broker/masterlink/masterlink_sdk-1.0.1-cp37-abi3-macosx_11_0_arm64.whl" }
 dependencies = [
     { name = "pyee" },
     { name = "requests" },

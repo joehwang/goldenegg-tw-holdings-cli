@@ -3,11 +3,11 @@
 *.whl
 *.p12
 **/log/*
-borker/esun/config.ini
-borker/esun/config.simulation.ini
-borker/masterlink/Configs/SYS_SOLACE.ini
+broker/esun/config.ini
+broker/esun/config.simulation.ini
+broker/masterlink/Configs/SYS_SOLACE.ini
 __pycache__
 .env
 .env.test
-borker/sinopac/.env
-borker/sinopac/.env
+broker/sinopac/.env
+broker/sinopac/.env

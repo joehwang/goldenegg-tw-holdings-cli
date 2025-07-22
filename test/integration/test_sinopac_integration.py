@@ -10,9 +10,9 @@ class TestSinopacIntegration:
         """每個測試方法執行前的設定"""
         
         # 取得專案根目錄
-        self.project_root = Path(__file__).parent.parent
+        self.project_root = Path(__file__).parent.parent.parent
 
-        self.cert_path = self.project_root / "borker" / "sinopac"
+        self.cert_path = self.project_root / "broker" / "sinopac"
         self.settings = settings.get_sinopac_settings()
 
 

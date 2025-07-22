@@ -138,7 +138,7 @@ golden-egg/
 ├── pyproject.toml       # 專案配置
 ├── start.sh            # 啟動腳本
 ├── README.md           # 專案說明
-└── borker/            # 券商 API 模組
+└── broker/            # 券商 API 模組
     ├── esun/          # 玉山證券 API
     ├── fubon_api/     # 富邦證券 API
     ├── masterlink_api/ # 元大證券 API

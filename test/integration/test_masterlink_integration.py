@@ -8,9 +8,9 @@ class TestMasterlinkIntegration:
     
     def setup_method(self):
         """每個測試方法執行前的設定"""
-        self.project_root = Path(__file__).parent.parent
+        self.project_root = Path(__file__).parent.parent.parent
         self.settings = settings.get_masterlink_settings()
-        self.cert_path = self.project_root / "borker" / "masterlink" / self.settings.cert_file
+        self.cert_path = self.project_root / "broker" / "masterlink" / self.settings.cert_file
     
     def test_certificate_file_exists(self):
         """測試憑證檔案是否存在"""

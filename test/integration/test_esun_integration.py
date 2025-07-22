@@ -11,8 +11,8 @@ class TestEsunIntegration:
         """每個測試方法執行前的設定"""
         # 取得專案根目錄
         self.settings = settings.get_esun_settings()  # 使用 settings 實例
-        self.project_root = Path(__file__).parent.parent
-        self.config_path = self.project_root / "borker" / "esun" / self.settings.config_file
+        self.project_root = Path(__file__).parent.parent.parent
+        self.config_path = self.project_root / "broker" / "esun" / self.settings.config_file
 
     def test_config_file_exists(self):
         """測試設定檔是否存在"""
