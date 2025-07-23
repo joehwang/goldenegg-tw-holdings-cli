@@ -17,7 +17,7 @@ class EsunSettings(BrokerSettings):
     def create_sdk(self):
         """建立玉山 SDK 實例"""
         from esun_trade.sdk import SDK
-        project_root = Path(__file__).parent.parent
+        project_root = Path(__file__).parent.parent.parent
         config_path = project_root / "broker" / "esun" / self.config_file
         # 讀取設定檔
         config = ConfigParser()
@@ -33,35 +33,21 @@ class EsunSettings(BrokerSettings):
 
 class EsunClient(BrokerClient):
     def load_settings(self) -> EsunSettings:
-        env_file = EsunSettings.get_env_file("esun", self.is_test)
+        env_file = EsunSettings.get_env_file("esun")
         return EsunSettings(_env_file=env_file)
 
     def get_holdings(self) -> str:
         # 使用 self.settings 來取得配置
         config_path = Path(__file__).parent / self.settings.config_file
         print(config_path)
+
+        # 登入
+        sdk = self.settings.create_sdk()
+        #sdk = SDK(config)
+        sdk.login()
+
+
+        # 庫存明細
+        inventories = sdk.get_inventories()
+        print(inventories)
         return "yes get holdings"
-
-
-if __name__ == "__main__":
-    """當直接執行此檔案時的測試代碼"""
-    print("=== 測試玉山證券客戶端 ===")
-    
-    try:
-        # 建立客戶端實例
-        client = EsunClient()
-        print(f"✓ 成功建立 EsunClient 實例")
-        print(f"✓ 設定檔: {client.settings.config_file}")
-        
-        # 測試取得持股功能
-        result = client.get_holdings()
-        print(f"✓ 持股查詢結果: {result}")
-        
-        # 測試設定資訊
-        print(f"✓ 是否為測試模式: {client.is_test}")
-        
-    except Exception as e:
-        print(f"✗ 錯誤: {e}")
-        print("提示：請確認環境變數和設定檔案是否正確配置")
-    
-    print("=== 測試完成 ===")

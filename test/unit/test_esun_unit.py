@@ -3,7 +3,7 @@ from unittest.mock import patch
 from broker.esun.client import EsunClient, EsunSettings
 
 
-class TestEsunSimpleUnit(unittest.TestCase):
+class TestEsunUnit(unittest.TestCase):
     """簡單的玉山證券客戶端單元測試"""
 
     def test_esun_settings_creation(self):
@@ -21,6 +21,11 @@ class TestEsunSimpleUnit(unittest.TestCase):
         self.assertIsInstance(client, EsunClient)
         self.assertIsInstance(client.settings, EsunSettings)
 
+    def test_esun_client_get_holdings(self):
+        """測試 EsunClient 取得庫存明細"""
+        client = EsunClient()
+        holdings = client.get_holdings()
+        self.assertEqual(holdings, "yes get holdings")
 
 if __name__ == '__main__':
     unittest.main() 
