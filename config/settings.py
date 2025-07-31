@@ -9,18 +9,7 @@ from pathlib import Path
 
 
         
-class MasterlinkSettings(BaseSettings):
-    login_id: str = ""
-    login_pwd: str = ""
-    cert_file: str = ""
-    cert_pwd: str = ""
-    model_config = ConfigDict(
-        env_prefix="MASTERLINK_"
-    )
 
-    def create_sdk(self):
-        from masterlink_sdk import MasterlinkSDK
-        return MasterlinkSDK()
 
 class SinopacSettings(BaseSettings):
     api_key: str = ""

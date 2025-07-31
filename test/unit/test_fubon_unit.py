@@ -25,7 +25,7 @@ class TestFubonUnit(unittest.TestCase):
         """測試 FubonClient 取得庫存明細"""
         client = FubonClient()
         holdings = client.get_holdings()
-        self.assertEqual(holdings, "yes get holdings")
-
+        self.assertEqual(holdings, True)
+        
 if __name__ == '__main__':
     unittest.main() 

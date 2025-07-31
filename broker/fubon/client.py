@@ -33,14 +33,10 @@ class FubonClient(BrokerClient):
         return FubonSettings(_env_file=env_file)
 
     def get_holdings(self) -> str:
-
         sdk = self.settings.create_sdk()
-
         accounts = sdk.login(self.settings.login_id, self.settings.login_pwd,
                             f"{self.settings.cert_path}/{self.settings.cert_file}", self.settings.cert_pwd)
         acc = accounts.data[0]
-        
         # 取得庫存
         result = sdk.accounting.inventories(acc)
-        print(result)
-        return "yes get holdings"
+        return result.is_success
