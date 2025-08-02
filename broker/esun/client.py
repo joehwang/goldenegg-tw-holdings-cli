@@ -28,7 +28,7 @@ class EsunSettings(BrokerSettings):
             cert_relative_path = config.get('Cert', 'Path')
             cert_absolute_path = project_root / "broker" / "esun" / cert_relative_path
             config.set('Cert', 'Path', str(cert_absolute_path))
-
+        print(config_path)
         return SDK(config)
 
 class EsunClient(BrokerClient):
@@ -39,8 +39,7 @@ class EsunClient(BrokerClient):
     def get_holdings(self) -> str:
         # 使用 self.settings 來取得配置
         config_path = Path(__file__).parent / self.settings.config_file
-        print(config_path)
-
+       
         # 登入
         sdk = self.settings.create_sdk()
         #sdk = SDK(config)

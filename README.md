@@ -29,9 +29,16 @@
 - **格式不一**：各券商 API 格式各異，難以整合
 - **缺乏標準**：沒有符合 AI Agent 生態的標準化持股 Plugin
 
+## pytest shortcut
+```bash
+#單測某個function
+uv run pytest  -W ignore::DeprecationWarning  -v -s  test/unit/test_shinopac.py -k test_sinopac_client_get_holdings
+```
 
 ## 注意
 - 測試所有integration test `pytest -W ignore::DeprecationWarning  -v -s`
+- 測試所有unit test `uv run pytest -W ignore::DeprecationWarning  -v -s test/unit`
+- 測試所有unit test 不帶 stdout `uv run pytest -W ignore::DeprecationWarning -s test/unit`
 - fubon測試: pytest test/test_fubon_integration.py -v -s 
 - 在根目錄的.env可以設定是否測試帳號
 
@@ -174,7 +181,8 @@ python main.py
 [在此填入授權資訊]
 
 ## TODO
-- test case裡私隱資訊要做成.env
+- unit test 完成了
+- intergation test 完成了
 
 在ESUN的docker compose yml看到
 ```yaml
@@ -199,4 +207,7 @@ volumes:
 
 ## 卷商文件
 
-- 元富(masterlink): https://ml-fugle-api.masterlink.com.tw/FugleSDK/
+- 元富(masterlink): https://ml-fugle-api.masterlink.com.tw/FugleSDK/  (沒有測試環境)
+- 富邦: https://www.fbs.com.tw/TradeAPI/docs/welcome/#%E6%B8%AC%E8%A9%A6%E7%92%B0%E5%A2%83 (有獨立的測試環境帳號憑證)
+- 玉山: https://www.esunsec.com.tw/trading-platforms/api-trading/docs/prerequisites#run_simulation (有測試環境，但是沒有單獨的帳號)
+- 永豐證卷: https://sinotrade.github.io/zh/tutor/simulation/ (有測試環境，但要用自已的憑證)
