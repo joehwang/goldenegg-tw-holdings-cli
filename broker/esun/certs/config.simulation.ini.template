@@ -1,0 +1,10 @@
+[Core]
+Entry = https://fugletradingapi-simulation.esunsec.com.tw/api/v1
+Environment = SIMULATION
+[Cert]
+Path = ./YOURKEY.p12
+[Api]
+Key = <KEY>
+Secret = <Secrt>
+[User]
+Account = <ACCOUNT>

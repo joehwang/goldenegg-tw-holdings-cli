@@ -1,0 +1,15 @@
+*.pfx
+*.log
+*.whl
+*.p12
+**/log/*
+broker/esun/config.ini
+broker/esun/config.simulation.ini
+broker/masterlink/Configs/SYS_SOLACE.ini
+__pycache__
+.env
+.env.test
+broker/sinopac/.env
+broker/sinopac/.env
+broker/esun/certs/config.simulation.ini
+broker/esun/certs/config.ini

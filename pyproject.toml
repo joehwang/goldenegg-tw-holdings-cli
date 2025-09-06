@@ -1,0 +1,35 @@
+[project]
+name = "golden-egg"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "cachetools>=6.1.0",
+    "esun-trade",
+    "fastmcp>=2.9.2",
+    "fubon-neo",
+    "lxml>=6.0.0",
+    "masterlink-sdk",
+    "pandas>=2.3.1",
+    "pydantic-settings>=2.10.1",
+    "requests>=2.32.4",
+    "shioaji[speed]>=1.2.6",
+]
+
+[tool.uv.sources]
+esun-trade = { path = "wheels/esun_trade-2.0.0-cp37-abi3-macosx_11_0_arm64.whl" }
+fubon-neo = { path = "wheels/fubon_neo-2.2.2-cp37-abi3-macosx_11_0_arm64.whl" }
+masterlink-sdk = { path = "wheels/masterlink_sdk-1.0.1-cp37-abi3-macosx_11_0_arm64.whl" }
+shioaji = { path = "wheels/shioaji-1.2.6-cp313-cp313-macosx_11_0_arm64.whl" }
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.1",
+]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel] #add packages to build
+packages = ["broker", "models", "service", "config"]

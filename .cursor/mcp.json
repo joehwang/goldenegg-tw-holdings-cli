@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "golden-egg": {
+      "command": "uv",
+      "args": ["run", "python", "/Users/joehwang/projects/golden-egg/main.py"],
+      "disabled": false
+    }
+  }
+}

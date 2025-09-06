@@ -1,0 +1,404 @@
+# 🥚 GoldenEgg MCP Plugin — 專案文件
+
+## 📌 專案目標
+
+GoldenEgg 是一個符合 Model Context Protocol (MCP) 架構的 Plugin，專門處理**持股資訊的儲存與查詢任務**。
+
+**核心定位**：
+- **不負責** OCR 或資料解析
+- **專注於** 與 LLM Agent 工具鏈整合
+- **成為** 持股資料的標準化儲存與取得介面
+
+⸻
+
+## 🧩 解決的問題
+
+### 🔍 背景問題
+- LLM 工具辨識對帳單後，資訊無法持久化記憶，每次都要重新辨識
+- 各券商 API 的存股資料查詢機制不一致，格式各異，不利於整合  
+- 缺乏符合 AI Agent 生態的標準化持股資訊 Plugin
+
+### ✅ GoldenEgg 解法
+- 📥 接收 LLM 已解析完成的持股資訊（JSON），統一格式儲存
+- 📤 支援查詢歷史持股紀錄或即時透過券商 API 取得
+- 🔁 統一資料輸出格式，便於 LLM 工具分析、視覺化與自動化處理
+- 🔌 作為 MCP Plugin 掛載於 MCP Server，可與任何 LLM Agent 無縫串接
+
+⸻
+
+## 🏗️ 系統架構設計
+
+```
+┌────────────┐         ┌──────────────────────┐        ┌────────────────────┐
+│ LLM Agent  │──call→ │ GoldenEgg MCP Plugin │──→ get │ 查詢券商或歷史資料  │
+│（流程控制）│         │（get_holdings）       │        │（統一格式 JSON）     │
+└────────────┘         └──────────────────────┘        └────────────────────┘
+```
+
+⸻
+
+## ⚙️ 技術架構
+
+### 開發框架
+專案使用 **FastMCP** 開發，需要善用以下四大核心元件。
+
+### 目錄結構（最新簡化版）
+```
+golden-egg/                 
+├── main.py                 ← MCP Server 啟動入口
+├── service/                ← 精簡服務層
+│   ├── mcp_server.py      ← FastMCP Server 配置
+│   ├── storage_service.py ← OCR 記憶儲存（唯一需要的 service）
+│   └── mcp/               ← MCP 協議實作
+│       ├── tools.py       ← save_holdings, get_holdings
+│       ├── resources.py   ← broker_configs, ocr_history, holdings_schema
+│       └── prompts.py     ← 使用指引範本
+├── broker/                ← 券商 API 層（直接使用，無中間層）
+│   ├── base.py            ← BrokerClient 基類
+│   ├── fubon/client.py    ← 直接在 tools.py 中使用
+│   ├── sinopac/client.py  ← 直接在 tools.py 中使用
+│   ├── esun/client.py     ← 直接在 tools.py 中使用
+│   └── masterlink/client.py ← 直接在 tools.py 中使用
+├── models/                ← 資料模型（需擴展 MCP 格式）
+│   ├── holdings.py        ← 新增 to_mcp_format(), from_mcp_format()
+│   ├── accounts.py
+│   ├── common.py
+│   └── market_data.py
+├── config/
+│   └── settings.py
+├── test/
+│   ├── unit/
+│   └── integration/
+├── pyproject.toml         ← FastMCP 2.9.2 已加入
+└── start.sh
+```
+
+## 🏗️ 簡化架構原則
+
+### ❌ 移除的層級
+- **holdings_service.py** - 功能由 `models/holdings.py` 直接提供
+- **broker_service.py** - 直接使用現有 `broker/` 模組
+- **mcp_plugin/ 獨立目錄** - 整合到 `service/mcp/` 內
+
+### ✅ 保留的層級
+```
+┌─────────────────────────────────────┐
+│     MCP 協議層 (FastMCP)            │  ← service/mcp/
+├─────────────────────────────────────┤
+│     資料模型層 (Pydantic)           │  ← models/
+├─────────────────────────────────────┤
+│     券商 API 層 (Direct Usage)      │  ← broker/
+├─────────────────────────────────────┤
+│     儲存層 (OCR Memory)            │  ← service/storage_service.py
+└─────────────────────────────────────┘
+```
+
+### 🎯 架構決定理由
+
+1. **避免過度設計**：Golden Egg 本身就是 MCP Plugin，不需要複雜中間層
+2. **直接使用現有模組**：`broker/` 模組已經有完整的券商 client 實作
+3. **KISS 原則**：保持簡單，專注核心功能
+4. **FastMCP 2.9.2**：已安裝並測試可用
+
+### 📋 實作優先級
+
+#### Phase 1: 資料模型擴展
+- 擴展 `models/holdings.py` 支援 MCP 格式轉換
+- 新增 `to_mcp_format()` 和 `from_mcp_format()` 方法
+
+#### Phase 2: MCP Tools 實作  
+- 實作 `service/mcp/tools.py`
+- 直接使用 broker client 和 models
+- 統一錯誤處理
+
+#### Phase 3: 儲存與配置
+- 實作 `service/storage_service.py` 
+- 實作 `service/mcp/resources.py` 和 `prompts.py`
+- 配置 `service/mcp_server.py`
+⸻
+
+## 🔧 FastMCP 四大核心元件設計
+
+### 1. 🛠️ **Tools（工具）**
+> **作用**: 讓 AI 執行動作和操作
+
+**特點**:
+- 類似 REST API 的 **POST 端點**
+- 可以**修改狀態**、執行計算、呼叫 API
+- 適合：資料處理、檔案操作、外部服務整合
+
+**GoldenEgg 實作**:
+- `save_holdings`：儲存 LLM 解析的持股資料
+- `get_holdings`：查詢持股資料（broker/OCR）
+
+### 2. 📊 **Resources（資源）**
+> **作用**: 為 AI 提供唯讀的背景資料
+
+**特點**:
+- 類似 REST API 的 **GET 端點**
+- **只讀**，不修改狀態
+- 支援動態參數 `{placeholder}`
+- 適合：配置查詢、文檔存取、狀態檢視
+
+**GoldenEgg 實作**:
+- `broker_configs`：支援券商清單與配置
+- `ocr_history/{id}`：歷史 OCR 記錄查詢
+- `holdings_schema`：持股資料格式規範
+
+### 3. 💬 **Prompts（提示範本）**
+> **作用**: 教 AI Client 如何更好地與系統互動
+
+**特點**:
+- 預定義的對話範本
+- 指導 AI 如何使用 tools 和 resources
+- 提供最佳實踐範例
+
+**GoldenEgg 實作**:
+- `save_ocr_data`：教導如何儲存 OCR 解析結果
+- `query_holdings`：指導如何查詢持股資料
+- `broker_integration`：券商 API 整合指南
+
+### 4. 🔧 **Context（上下文）**
+> **作用**: 在工具和資源中存取 MCP 會話功能
+
+**特點**:
+- 存取當前 MCP 會話狀態
+- 用戶身份與權限管理
+- 跨 tools/resources 的資料共享
+
+**GoldenEgg 實作**:
+- 用戶持股資料的會話記憶
+- 券商認證狀態管理
+- OCR 解析歷史的上下文追蹤
+
+⸻
+
+## 🔁 進階設計模式
+
+### 1. Tool 與 Resource 組合用法
+- 在 tool 中呼叫 `ctx.read_resource(...)`，從已有資料庫或 config 資源中補足使用者輸入不足的參數
+- **範例應用**：在 `get_holdings` tool 中，若 broker 未指定，可以預設從 `config://default_broker` 讀取
+
+### 2. 🔐 身分驗證與權限管理
+- FastMCP 雖然預設是開放的 dev server，但在整合券商 API 或私密 OCR 時，需加入使用者認證（如 Token or API Key）
+- 可以用 `Context.user` 或在 tool 裡自訂 `ctx.metadata["token"]` 驗證
+
+### 3. 📦 Plugin-aware 設計模式
+- 每個券商 API 都可以是 plugin + tool 的方式掛載
+- 支援動態載入與熱插拔機制
+
+⸻
+
+## 🧾 Tools 實作規格
+
+### 1. save_holdings
+
+**用途**：儲存 LLM 已解析的持股資料
+
+| 參數 | 類型 | 必填 | 說明 |
+|------|------|------|------|
+| source | string | ✅ | 資料來源（如 "ocr"） |
+| data | list[object] | ✅ | 持股清單陣列（符合 schema） |
+
+**回傳**：
+```json
+{ "status": "ok", "id": "ocr_20250716_01" }
+```
+
+### 2. get_holdings
+
+**用途**：查詢持股清單
+
+| 參數 | 類型 | 必填 | 說明 |
+|------|------|------|------|
+| source | string | ✅ | "broker" 或 "ocr" |
+| broker | string | ❌ | 券商代號（僅 source=broker 時需要） |
+| id | string | ❌ | OCR 資料 ID（可選） |
+
+**回傳**：統一持股 JSON 陣列
+
+⸻
+
+## 📊 Resources 實作規格
+
+### 1. broker_configs
+**URI**: `goldenegg://broker_configs`
+**用途**: 提供支援的券商清單與配置資訊
+
+### 2. ocr_history/{id}
+**URI**: `goldenegg://ocr_history/{id}`
+**用途**: 查詢指定 ID 的歷史 OCR 記錄
+
+### 3. holdings_schema
+**URI**: `goldenegg://holdings_schema`
+**用途**: 提供持股資料的 JSON schema 規範
+
+⸻
+
+## 💬 Prompts 實作規格
+
+### 1. save_ocr_data
+**用途**: 指導如何儲存 OCR 解析結果
+**範本**: 包含格式要求、錯誤處理、最佳實踐
+
+### 2. query_holdings  
+**用途**: 指導如何查詢持股資料
+**範本**: 券商查詢 vs OCR 查詢的使用時機
+
+### 3. broker_integration
+**用途**: 券商 API 整合指南
+**範本**: 認證設定、API 限制、錯誤處理
+
+⸻
+
+## 🧮 資料格式規範
+
+### 統一輸出格式
+```json
+[
+  {
+    "symbol": "2330.TW",
+    "name": "台積電", 
+    "shares": 1000,
+    "avg_cost": 580.0,
+    "currency": "TWD",
+    "source": "broker",
+    "retrieved_at": "2025-07-16T12:00:00+08:00"
+  }
+]
+```
+
+### 欄位說明
+| 欄位 | 類型 | 說明 |
+|------|------|------|
+| symbol | string | 股票代號（含市場） |
+| name | string | 公司名稱 |
+| shares | int | 持股數量 |
+| avg_cost | float | 平均成本 |
+| currency | string | 幣別（如 "TWD"） |
+| source | string | 資料來源（"ocr" / "broker"） |
+| retrieved_at | datetime | ISO 8601 格式時間戳 |
+
+⸻
+
+## 📦 支援券商
+
+| 券商 | 模組名稱 | 狀態 |
+|------|----------|------|
+| 富邦證券 | fubon | ✅ 已整合 |
+| 永豐證券 | sinopac | ✅ 已整合 |
+| 元富證券 | masterlink | ✅ 已整合 |
+| 玉山證券 | esun | ✅ 已整合 |
+
+⸻
+
+## 🚀 使用方式
+
+### 安裝與啟動
+```bash
+pip install fastmcp
+fastmcp run goldenegg_plugin.py
+
+# 或使用啟動腳本
+bash start.sh
+```
+
+### Tools 使用範例
+
+#### 儲存 OCR 解析結果
+```json
+{
+  "tool": "save_holdings",
+  "args": {
+    "source": "ocr",
+    "data": [
+      {
+        "symbol": "2330.TW",
+        "name": "台積電",
+        "shares": 1000,
+        "avg_cost": 580.0,
+        "currency": "TWD",
+        "retrieved_at": "2025-07-16T12:00:00+08:00"
+      }
+    ]
+  }
+}
+```
+
+#### 查詢券商持股
+```json
+{
+  "tool": "get_holdings",
+  "args": {
+    "source": "broker",
+    "broker": "fubon"
+  }
+}
+```
+
+### Resources 使用範例
+
+#### 查詢券商配置
+```
+GET goldenegg://broker_configs
+```
+
+#### 查詢 OCR 歷史
+```
+GET goldenegg://ocr_history/ocr_20250716_01
+```
+
+⸻
+
+## 🧪 測試策略
+
+採用 pytest 單元測試，涵蓋：
+- **Tools 測試**: `save_holdings()` 和 `get_holdings()` 功能測試
+- **Resources 測試**: 各種 URI 的資料存取測試
+- **Prompts 測試**: 範本格式與內容驗證
+- **Context 測試**: 會話狀態管理測試
+- **錯誤處理測試**: 各種異常情況的處理
+
+**執行測試**：
+```bash
+pytest test/
+```
+
+⸻
+
+## 🔖 Plugin Metadata
+
+**pyproject.toml 設定**：
+```toml
+[project]
+name = "golden-egg"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "fastmcp>=2.9.2",
+    "pydantic-settings>=2.10.1",
+    "esun-trade",
+    "fubon-neo", 
+    "masterlink-sdk",
+    "shioaji>=1.2.6",
+    # ... 其他依賴
+]
+
+[tool.mcp.plugin]
+name = "goldenegg"
+version = "0.1.0"
+description = "提供持股查詢與儲存的 MCP 插件"
+entrypoint = "service.mcp_server"  # 更新為新的入口點
+tools = ["save_holdings", "get_holdings"]
+resources = ["broker_configs", "ocr_history", "holdings_schema"]
+prompts = ["save_ocr_data", "query_holdings", "broker_integration"]
+```
+
+### 🚀 啟動方式
+```bash
+# 使用 UV 啟動
+uv run python main.py
+
+# 或使用啟動腳本  
+./start.sh
+```

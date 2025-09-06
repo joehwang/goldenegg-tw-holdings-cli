@@ -1,0 +1,9 @@
+[Core]
+Entry = https://fugletradingapi.esunsec.com.tw/api/v1
+[Cert]
+Path = /broker/fugle/YOUR_CERT.p12
+[Api]
+Key = <KEY>
+Secret = <SECRT>>
+[User]
+Account = <ACCOUNT>
