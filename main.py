@@ -8,7 +8,11 @@ Golden Egg MCP Server 啟動入口
 3. 處理命令列參數
 4. 配置日誌和錯誤處理
 """
-
+import os
+os.environ.setdefault(
+    "PYTHON_KEYRING_BACKEND",
+    "keyrings.cryptfile.cryptfile.CryptFileKeyring",
+)
 from service.mcp_server import create_server
 
 if __name__ == "__main__":

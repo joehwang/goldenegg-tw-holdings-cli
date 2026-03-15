@@ -245,15 +245,15 @@ wheels = [
 
 [[package]]
 name = "esun-trade"
-version = "2.0.0"
-source = { path = "wheels/esun_trade-2.0.0-cp37-abi3-macosx_11_0_arm64.whl" }
+version = "2.2.0"
+source = { path = "wheels/esun_trade-2.2.0-cp37-abi3-macosx_11_0_arm64.whl" }
 dependencies = [
     { name = "keyring" },
     { name = "keyrings-cryptfile" },
     { name = "websocket-client" },
 ]
 wheels = [
-    { filename = "esun_trade-2.0.0-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:c2661c94ab7d08f6b48d49b9f95cb170ca73cf4d23f48812f70de63915ddd6d5" },
+    { filename = "esun_trade-2.2.0-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:5fed35e8b1b9be10815cee624e52f9f8b2ae82595c4826bfa0bd41d429d2f8f8" },
 ]
 
 [package.metadata]
@@ -347,7 +347,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "cachetools", specifier = ">=6.1.0" },
-    { name = "esun-trade", path = "wheels/esun_trade-2.0.0-cp37-abi3-macosx_11_0_arm64.whl" },
+    { name = "esun-trade", path = "wheels/esun_trade-2.2.0-cp37-abi3-macosx_11_0_arm64.whl" },
     { name = "fastmcp", specifier = ">=2.9.2" },
     { name = "fubon-neo", path = "wheels/fubon_neo-2.2.2-cp37-abi3-macosx_11_0_arm64.whl" },
     { name = "lxml", specifier = ">=6.0.0" },
