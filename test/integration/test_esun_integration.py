@@ -5,7 +5,10 @@ from broker.esun.client import EsunClient, EsunSettings
 from models.holdings import Holdings, Position
 from models.accounts import Account
 
-
+os.environ.setdefault(
+    "PYTHON_KEYRING_BACKEND",
+    "keyrings.cryptfile.cryptfile.CryptFileKeyring",
+)
 class TestEsunIntegration(unittest.TestCase):
     """玉山證券整合測試 - 需要真實的帳號設定"""
     
