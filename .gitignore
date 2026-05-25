@@ -13,3 +13,4 @@ broker/sinopac/.env
 broker/sinopac/.env
 broker/esun/certs/config.simulation.ini
 broker/esun/certs/config.ini
+*.DS_Store

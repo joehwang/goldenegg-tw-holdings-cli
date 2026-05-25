@@ -13,13 +13,14 @@ import urllib3
  
 class FubonSettings(BrokerSettings):
     login_id: str = ""
-    login_pwd: str = ""
+    api_key: str = ""
     cert_file: str = ""
     cert_pwd: str = ""
     login_url: str = ""
     cert_path: str = ""
     model_config = ConfigDict(
-        env_prefix="FUBON_"
+        env_prefix="FUBON_",
+        extra="ignore",
     )
 
     def create_sdk(self):
@@ -37,12 +38,41 @@ class FubonClient(BrokerClient):
         env_file = FubonSettings.get_env_file("fubon")
         return FubonSettings(_env_file=env_file)
 
+    def _validate_login_result(self, accounts):
+        """Validate Fubon login response and return the first account."""
+        if accounts is None:
+            raise RuntimeError("富邦登入失敗: SDK 未回傳登入結果")
+
+        is_success = getattr(accounts, "is_success", None)
+        if is_success is False:
+            message = getattr(accounts, "message", "無錯誤訊息")
+            code = getattr(accounts, "code", None)
+            code_text = f" code={code}," if code is not None else ""
+            raise RuntimeError(f"富邦登入失敗:{code_text} message={message}")
+
+        account_data = getattr(accounts, "data", None)
+        if not account_data:
+            message = getattr(accounts, "message", "無錯誤訊息")
+            code = getattr(accounts, "code", None)
+            code_text = f" code={code}," if code is not None else ""
+            raise RuntimeError(f"富邦登入成功但沒有帳戶資料:{code_text} message={message}")
+
+        return account_data[0]
+
     def get_holdings(self) -> Holdings:
         """取得持股資訊，回傳標準 Holdings 格式"""
         sdk = self.settings.create_sdk()
-        accounts = sdk.login(self.settings.login_id, self.settings.login_pwd,
-                            f"{self.settings.cert_path}/{self.settings.cert_file}", self.settings.cert_pwd)
-        acc = accounts.data[0]
+        cert_path = f"{self.settings.cert_path}/{self.settings.cert_file}"
+        if not self.settings.api_key:
+            raise RuntimeError("缺少 FUBON_API_KEY 設定")
+
+        accounts = sdk.apikey_login(
+            self.settings.login_id,
+            self.settings.api_key,
+            cert_path,
+            self.settings.cert_pwd or self.settings.login_id,
+        )
+        acc = self._validate_login_result(accounts)
         
         # 取得庫存
         result = sdk.accounting.inventories(acc)
@@ -84,7 +114,6 @@ class FubonClient(BrokerClient):
             merged_item = {**inventory_dict, **unrealized_dict}
             merge_inventory_data.append(merged_item)
 
-        print(merge_inventory_data)
         # 建立帳戶資訊
         account_info = Account(
             account_id=acc.account,
@@ -104,12 +133,10 @@ class FubonClient(BrokerClient):
     
     def _convert_inventory_to_position(self, inventory) -> Position:
         """轉換富邦 Inventory 資料為標準 Position 格式"""
-        print(inventory)
         # 計算總持股數量（整股 + 零股）
         # {'stock_no': '5306', 'today_qty': 2000, 'tradable_qty': 2000, 'odd': {'today_qty': 100, 'tradable_qty': 100}, 'cost_price': 158.2905, 'unrealized_profit': 0, 'unrealized_loss': 132327}
         total_quantity = inventory["today_qty"] + inventory["odd"]["today_qty"]
         total_available = inventory["tradable_qty"] + inventory["odd"]["tradable_qty"]
-        print(total_quantity, total_available)
         return Position(
             symbol=inventory["stock_no"],
 

@@ -1,6 +1,6 @@
 # Golden Egg
 
-以 MCP Plugin 方式實現台股庫存查詢功能，讓 AI Agent 能夠輕鬆調用。目前支援富邦、永豐、元富、玉山等四間證券公司。
+Golden Egg 是台股券商庫存查詢命令列工具。目前支援富邦、永豐、元富、玉山等四間證券公司。
 
 ![image](demo.gif)
 
@@ -28,6 +28,79 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 ```powershell
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
+
+## 安裝依賴
+
+```bash
+uv sync
+```
+
+## 命令列使用方式
+
+列出支援券商：
+
+```bash
+uv run python main.py brokers
+```
+
+查詢全部券商持股：
+
+```bash
+uv run python main.py holdings
+```
+
+查詢單一券商持股：
+
+```bash
+uv run python main.py holdings --broker fubon
+```
+
+查詢多個券商持股：
+
+```bash
+uv run python main.py holdings --broker fubon,esun
+```
+
+強制重新呼叫券商 API：
+
+```bash
+uv run python main.py holdings --force-refresh
+```
+
+輸出原始查詢結果：
+
+```bash
+uv run python main.py holdings --raw
+```
+
+查看所有命令和參數：
+
+```bash
+uv run python main.py --help
+uv run python main.py holdings --help
+```
+
+如果專案已安裝為可執行指令，也可以使用：
+
+```bash
+uv run golden-egg brokers
+uv run golden-egg holdings --broker all
+```
+
+## 富邦 API Key 登入
+
+富邦新一代 API 自 SDK `2.2.7` 起支援 API Key 登入，SDK `2.2.8` 起支援網頁憑證匯出登入。本專案已改用 `fubon_neo` `2.2.8`。
+
+如果要使用 API Key，請在 `broker/fubon/.env` 加入：
+
+```bash
+FUBON_LOGIN_ID=<身分證字號>
+FUBON_API_KEY=<富邦 API Key>
+FUBON_CERT_FILE=<憑證檔名>
+FUBON_CERT_PWD=<憑證密碼，可省略時預設使用身分證字號>
+```
+
+富邦目前只支援 API Key 登入，`FUBON_LOGIN_PWD` 不會被使用。
 
 ## 驗證卷商是否開通
 
@@ -95,9 +168,7 @@ golden-egg/
 │   ├── __init__.py
 │   └── settings.py            # 全域設定
 ├── docs/                      # 文件目錄
-│   ├── cursor_mcp_setup.md
-│   ├── market_data_api_spec.md
-│   └── MCP_TESTING_GUIDE.md
+│   └── market_data_api_spec.md
 ├── log/                       # 全域日誌目錄
 ├── models/                    # 資料模型
 │   ├── __init__.py
@@ -109,13 +180,8 @@ golden-egg/
 │   └── market_data.py         # 市場資料模型
 ├── service/                   # 服務層
 │   ├── __init__.py
+│   ├── cli.py                 # 命令列介面
 │   ├── holdings_service.py    # 持股服務
-│   ├── mcp/
-│   │   ├── __init__.py
-│   │   ├── prompts.py         # MCP 提示詞
-│   │   ├── resources.py       # MCP 資源
-│   │   └── tools.py           # MCP 工具
-│   ├── mcp_server.py         # MCP 服務器
 │   └── storage_service.py     # 儲存服務
 ├── test/                      # 測試目錄
 │   ├── conftest.py            # 測試配置
@@ -134,41 +200,6 @@ golden-egg/
 │       └── test_shinopac.py
 └── wheels/                    # WHL 檔案目錄
     └── README.md
-```
-
-## mcp設定
-
-### OPEN AI CODEX
-
-```bash
-# ~/.codex/config.toml  
-[mcp_servers.golden-egg]
-command = "uv"
-args = ["run", "--project", "<YOUR_PATH>/golden-egg", "python", "<YOUR_PATH>/golden-egg/main.py"]
-```
-
-### CURSOR
-```bash
-# ~/.cursor/mcp.json
-{
-  "mcpServers": {
-    "golden-egg": {
-      "command": "<YOUR_PATH>/golden-egg/.venv/bin/python",
-      "args": ["<YOUR_PATH>/golden-egg/main.py"],
-      "disabled": false
-    }
-  }
-}
-```
-
-### VSCODE
-```bash
-#檢視>命令選擇區>add mcp server
-"golden-egg": {
-      "command": "<YOUR_PATH>/golden-egg/.venv/bin/python",
-      "args": ["<YOUR_PATH>/golden-egg/main.py"],
-      "type": "stdio"
-}
 ```
 
 ## 授權

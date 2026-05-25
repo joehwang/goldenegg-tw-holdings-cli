@@ -152,6 +152,15 @@ class HoldingsService:
             # 單一券商
             broker_code = broker_codes[0]
             holdings = await self._get_single_broker_holdings(broker_code)
+            if not holdings:
+                return {
+                    "success": False,
+                    "source": "api",
+                    "broker": broker_code,
+                    "data": None,
+                    "error": f"取得 {broker_code} 持股資料失敗",
+                    "timestamp": datetime.now().isoformat()
+                }
             if holdings and update_prices:
                 holdings = holdings.update_current_prices()
             
@@ -165,6 +174,17 @@ class HoldingsService:
         else:
             # 多券商整合
             holdings_dict = await self._get_multiple_broker_holdings(broker_codes)
+            if not holdings_dict:
+                return {
+                    "success": False,
+                    "source": "api",
+                    "broker": "merged",
+                    "broker_list": broker_codes,
+                    "data": None,
+                    "individual_data": {},
+                    "error": "所有券商持股資料取得失敗",
+                    "timestamp": datetime.now().isoformat()
+                }
             merged_holdings = self._merge_holdings(holdings_dict)
             
             if merged_holdings and update_prices:

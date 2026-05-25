@@ -2,6 +2,7 @@ import unittest
 import os
 from pathlib import Path
 from broker.masterlink.client import MasterlinkClient, MasterlinkSettings
+from integration.helpers import get_holdings_or_skip
 from models.holdings import Holdings, Position
 from models.accounts import Account
 
@@ -48,8 +49,7 @@ class TestMasterlinkIntegration(unittest.TestCase):
     def test_masterlink_get_holdings_real_api(self):
         """測試元富取得真實持股資料"""
         try:
-            client = MasterlinkClient()
-            holdings = client.get_holdings()
+            holdings = get_holdings_or_skip(self, MasterlinkClient, "元富")
             
             # 驗證回傳類型
             self.assertIsInstance(holdings, Holdings)
@@ -82,17 +82,17 @@ class TestMasterlinkIntegration(unittest.TestCase):
             print(f"總成本: {holdings.total_cost_value}")
             print(f"總市值: {holdings.total_market_value}")
             
+        except unittest.SkipTest:
+            raise
         except Exception as e:
             self.fail(f"取得元富持股失敗: {e}")
     
     def test_masterlink_data_consistency(self):
         """測試元富資料一致性"""
         try:
-            client = MasterlinkClient()
-            
             # 連續呼叫兩次，檢查資料一致性
-            holdings1 = client.get_holdings()
-            holdings2 = client.get_holdings()
+            holdings1 = get_holdings_or_skip(self, MasterlinkClient, "元富")
+            holdings2 = get_holdings_or_skip(self, MasterlinkClient, "元富")
             
             # 帳戶資訊應該相同
             self.assertEqual(holdings1.account.account_id, holdings2.account.account_id)
@@ -103,6 +103,8 @@ class TestMasterlinkIntegration(unittest.TestCase):
             
             print(f"✅ 資料一致性測試通過")
             
+        except unittest.SkipTest:
+            raise
         except Exception as e:
             self.fail(f"資料一致性測試失敗: {e}")
 

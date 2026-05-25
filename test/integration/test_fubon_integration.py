@@ -2,6 +2,7 @@ import unittest
 import os
 from pathlib import Path
 from broker.fubon.client import FubonClient, FubonSettings
+from integration.helpers import get_holdings_or_skip
 from models.holdings import Holdings, Position
 from models.accounts import Account
 
@@ -23,12 +24,10 @@ class TestFubonIntegration(unittest.TestCase):
             # 檢查必要的設定
             if not settings.login_id:
                 self.skipTest("缺少 FUBON_LOGIN_ID 設定")
-            if not settings.login_pwd:
-                self.skipTest("缺少 FUBON_LOGIN_PWD 設定")
+            if not settings.api_key:
+                self.skipTest("缺少 FUBON_API_KEY 設定")
             if not settings.cert_file:
                 self.skipTest("缺少 FUBON_CERT_FILE 設定")
-            if not settings.cert_pwd:
-                self.skipTest("缺少 FUBON_CERT_PWD 設定")
                 
             print(f"✅ 環境設定檢查通過，帳號: {settings.login_id}")
             
@@ -48,8 +47,7 @@ class TestFubonIntegration(unittest.TestCase):
     def test_fubon_get_holdings_real_api(self):
         """測試富邦取得真實持股資料"""
         try:
-            client = FubonClient()
-            holdings = client.get_holdings()
+            holdings = get_holdings_or_skip(self, FubonClient, "富邦")
             
             # 驗證回傳類型
             self.assertIsInstance(holdings, Holdings)
@@ -81,6 +79,8 @@ class TestFubonIntegration(unittest.TestCase):
             print(f"總成本: {holdings.total_cost_value}")
             print(f"總市值: {holdings.total_market_value}")
             
+        except unittest.SkipTest:
+            raise
         except Exception as e:
             self.fail(f"取得富邦持股失敗: {e}")
     

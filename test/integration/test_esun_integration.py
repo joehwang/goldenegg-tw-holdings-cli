@@ -2,6 +2,7 @@ import unittest
 import os
 from pathlib import Path
 from broker.esun.client import EsunClient, EsunSettings
+from integration.helpers import get_holdings_or_skip
 from models.holdings import Holdings, Position
 from models.accounts import Account
 
@@ -51,8 +52,7 @@ class TestEsunIntegration(unittest.TestCase):
     def test_esun_get_holdings_real_api(self):
         """測試玉山取得真實持股資料"""
         try:
-            client = EsunClient()
-            holdings = client.get_holdings()
+            holdings = get_holdings_or_skip(self, EsunClient, "玉山")
             
             # 驗證回傳類型
             self.assertIsInstance(holdings, Holdings)
@@ -92,17 +92,17 @@ class TestEsunIntegration(unittest.TestCase):
             if holdings.total_unrealized_pnl_rate is not None:
                 print(f"總損益率: {holdings.total_unrealized_pnl_rate:.2f}%")
             
+        except unittest.SkipTest:
+            raise
         except Exception as e:
             self.fail(f"取得玉山持股失敗: {e}")
     
     def test_esun_data_consistency(self):
         """測試玉山資料一致性"""
         try:
-            client = EsunClient()
-            
             # 連續呼叫兩次，檢查資料一致性
-            holdings1 = client.get_holdings()
-            holdings2 = client.get_holdings()
+            holdings1 = get_holdings_or_skip(self, EsunClient, "玉山")
+            holdings2 = get_holdings_or_skip(self, EsunClient, "玉山")
             
             # 帳戶資訊應該相同
             self.assertEqual(holdings1.account.account_id, holdings2.account.account_id)
@@ -121,14 +121,15 @@ class TestEsunIntegration(unittest.TestCase):
             
             print(f"✅ 資料一致性測試通過")
             
+        except unittest.SkipTest:
+            raise
         except Exception as e:
             self.fail(f"資料一致性測試失敗: {e}")
     
     def test_esun_holdings_position_validation(self):
         """測試玉山持股資料完整性驗證"""
         try:
-            client = EsunClient()
-            holdings = client.get_holdings()
+            holdings = get_holdings_or_skip(self, EsunClient, "玉山")
             
             # 驗證每個持股的資料完整性
             for position in holdings.positions:
@@ -159,6 +160,8 @@ class TestEsunIntegration(unittest.TestCase):
             
             print(f"✅ 持股資料完整性驗證通過")
             
+        except unittest.SkipTest:
+            raise
         except Exception as e:
             self.fail(f"持股資料完整性驗證失敗: {e}")
 

@@ -5,7 +5,7 @@
 ## 檔案清單
 
 - `esun_trade-2.0.0-cp37-abi3-macosx_11_0_arm64.whl` - 玉山證券 SDK
-- `fubon_neo-2.2.2-cp37-abi3-macosx_11_0_arm64.whl` - 富邦證券 SDK  
+- `fubon_neo-2.2.8-cp37-abi3-macosx_11_0_arm64.whl` - 富邦證券 SDK  
 - `masterlink_sdk-1.0.1-cp37-abi3-macosx_11_0_arm64.whl` - 元富證券 SDK
 
 ## 注意事項
