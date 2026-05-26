@@ -1,30 +1,52 @@
 # Golden Egg
 
-Golden Egg 是台股券商庫存查詢命令列工具。目前支援富邦、永豐、元富、玉山等四間證券公司。
+Golden Egg 是台股券商庫存查詢命令列工具，可查詢並整合富邦、永豐、玉山、台新證券 Nova API 的持股資料。
 
 ![image](demo.gif)
 
-## 前置需求
+## 重要前提
 
-- 在要連接的卷商申請交易憑證，查看最下方的卷商文件
+執行本專案前，必須先到各券商完成 API 申請流程。通常包含：
+
+- 申請或啟用證券 API 服務
+- 簽署 API 使用風險聲明書或同意書
+- 申請並下載交易憑證
+- 取得 API Key、API Secret、登入帳號密碼或券商設定檔
+- 等待券商完成開通；部分券商簽署後不是立即生效
+
+沒有完成券商端 API 開通時，程式可以安裝，但無法成功登入券商 API。
+
+## 支援券商
+
+| 券商 | broker code | SDK | 登入方式 |
+| --- | --- | --- | --- |
+| 富邦證券 | `fubon` | `fubon_neo` `2.2.8` | API Key + 憑證 |
+| 永豐證券 | `sinopac` | `shioaji` | API Key + API Secret + 憑證 |
+| 玉山證券 | `esun` | `esun-trade` | `config.ini` |
+| 台新證券 Nova API | `tssco` | `taishin_sdk` `1.0.2` | 帳密 + 憑證 |
+
+各券商申請流程與設定欄位請看 [券商設定文件](docs/brokers.md)。
+
+## 環境需求
+
+- macOS ARM64
 - Python 3.13 或更高版本
-- UV 套件管理器
+- uv
+- 各券商 API 權限與憑證
+- 本地 SDK wheel 檔案放在 `wheels/`
 
-## 卷商文件
+目前 `*.whl` 被 `.gitignore` 忽略。clone 專案後，請依 [券商設定文件](docs/brokers.md) 下載需要的 SDK wheel 到 `wheels/`。
 
-- 元富(masterlink): https://ml-fugle-api.masterlink.com.tw/FugleSDK/  (沒有測試環境)
-- 富邦: https://www.fbs.com.tw/TradeAPI/docs/welcome/#%E6%B8%AC%E8%A9%A6%E7%92%B0%E5%A2%83 (有獨立的測試環境帳號憑證)
-- 玉山: https://www.esunsec.com.tw/trading-platforms/api-trading/docs/prerequisites#run_simulation (有測試環境，但是沒有單獨的帳號)
-- 永豐證卷: https://sinotrade.github.io/zh/tutor/simulation/ (有測試環境，但要用自已的憑證)
+## 安裝 uv
 
-## 安裝 UV
+macOS / Linux:
 
-### macOS / Linux
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-### Windows
+Windows:
+
 ```powershell
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
@@ -35,172 +57,117 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 uv sync
 ```
 
-## 命令列使用方式
+可選：安裝成全域命令。
+
+```bash
+uv tool install --editable .
+```
+
+安裝後可直接使用：
+
+```bash
+golden-egg --help
+```
+
+## 設定檔模式
+
+本專案透過根目錄 `.env-debug` 決定要讀正式設定還是測試設定。
+
+```bash
+EGG_DEBUG=true
+```
+
+讀取規則：
+
+| `EGG_DEBUG` | 讀取檔案 |
+| --- | --- |
+| `true` | `broker/<broker>/.env.test` |
+| `false` | `broker/<broker>/.env` |
+
+如果你明明改了 `.env` 但程式沒有吃到，多半是因為 `EGG_DEBUG=true`，程式正在讀 `.env.test`。
+
+## 基本使用
 
 列出支援券商：
 
 ```bash
-uv run python main.py brokers
+golden-egg brokers
 ```
 
 查詢全部券商持股：
 
 ```bash
-uv run python main.py holdings
+golden-egg holdings
 ```
 
-查詢單一券商持股：
+查詢單一券商：
 
 ```bash
-uv run python main.py holdings --broker fubon
+golden-egg holdings --broker fubon
 ```
 
-查詢多個券商持股：
+查詢多個券商：
 
 ```bash
-uv run python main.py holdings --broker fubon,esun
+golden-egg holdings --broker fubon,esun
 ```
 
 強制重新呼叫券商 API：
 
 ```bash
-uv run python main.py holdings --force-refresh
+golden-egg holdings --broker tssco --force-refresh
 ```
 
-輸出原始查詢結果：
+輸出原始 JSON：
 
 ```bash
-uv run python main.py holdings --raw
+golden-egg holdings --broker fubon --raw
 ```
 
-查看所有命令和參數：
+尚未安裝全域命令時，也可以用：
 
 ```bash
-uv run python main.py --help
-uv run python main.py holdings --help
+uv run python main.py holdings --broker all
 ```
 
-如果專案已安裝為可執行指令，也可以使用：
+## 測試
+
+日常測試：
 
 ```bash
-uv run golden-egg brokers
-uv run golden-egg holdings --broker all
+uv run pytest -q
 ```
 
-## 富邦 API Key 登入
-
-富邦新一代 API 自 SDK `2.2.7` 起支援 API Key 登入，SDK `2.2.8` 起支援網頁憑證匯出登入。本專案已改用 `fubon_neo` `2.2.8`。
-
-如果要使用 API Key，請在 `broker/fubon/.env` 加入：
+單元測試：
 
 ```bash
-FUBON_LOGIN_ID=<身分證字號>
-FUBON_API_KEY=<富邦 API Key>
-FUBON_CERT_FILE=<憑證檔名>
-FUBON_CERT_PWD=<憑證密碼，可省略時預設使用身分證字號>
+uv run pytest -q test/unit
 ```
 
-富邦目前只支援 API Key 登入，`FUBON_LOGIN_PWD` 不會被使用。
+單一券商整合測試：
 
-## 驗證卷商是否開通
-
-### 驗證永豐
 ```bash
-uv run pytest -W ignore::DeprecationWarning  -v -s  test/unit/test_shinopac.py 
-```
-### 驗證富邦
-```bash
-uv run pytest -W ignore::DeprecationWarning  -v -s  test/unit/test_fubon_unit.py 
-```
-### 驗證玉山證卷
-```bash
-uv run pytest -W ignore::DeprecationWarning  -v -s  test/unit/test_esun_unit.py 
-```
-### 驗證元富證卷
-```bash
-uv run pytest -W ignore::DeprecationWarning  -v -s  test/unit/test_masterlink_unit.py 
+uv run pytest -W ignore::DeprecationWarning -v -s test/integration/test_fubon_integration.py
+uv run pytest -W ignore::DeprecationWarning -v -s test/integration/test_tssco_integration.py
+uv run pytest -W ignore::DeprecationWarning -v -s test/integration/test_sinopac_integration.py
+uv run pytest -W ignore::DeprecationWarning -v -s test/integration/test_esun_integration.py
 ```
 
-## 其他測試
-- 測試所有integration test `pytest -W ignore::DeprecationWarning  -v -s`
-- 測試所有unit test `uv run pytest -W ignore::DeprecationWarning  -v -s test/unit`
-- 測試所有unit test 不帶 stdout `uv run pytest -W ignore::DeprecationWarning -s test/unit`
+整合測試會連真實券商 API。若券商端暫時錯誤、rate limit 或尚未開通，測試可能 skip 或失敗。
 
+## 文件
 
-## 專案結構
+- [券商設定文件](docs/brokers.md)
+- [錯誤排查](docs/troubleshooting.md)
+- [市場資料 API 規格](docs/market_data_api_spec.md)
 
-```
-golden-egg/
-├── main.py                    # 主程式入口
-├── pyproject.toml             # 專案配置
-├── uv.lock                    # UV 依賴鎖定檔案
-├── start.sh                   # 啟動腳本
-├── README.md                  # 專案說明
-├── broker/                    # 券商 API 模組
-│   ├── __init__.py
-│   ├── base.py                # 券商基礎類別
-│   ├── esun/                  # 玉山證券 API
-│   │   ├── __init__.py
-│   │   ├── app.py
-│   │   ├── certs/             # 玉山憑證檔案
-│   │   ├── client.py
-│   │   └── reset.py
-│   ├── fubon/                 # 富邦證券 API
-│   │   ├── __init__.py
-│   │   ├── app.py
-│   │   ├── certs/             # 富邦憑證檔案
-│   │   ├── client.py
-│   │   ├── log/               # 富邦日誌
-│   │   ├── ocr_demo.py
-│   │   └── ocr.py
-│   ├── masterlink/            # 元富證券 API
-│   │   ├── __init__.py
-│   │   ├── app.py
-│   │   ├── certs/             # 元富憑證檔案
-│   │   ├── client.py
-│   │   ├── Configs/           # 元富設定檔案
-│   │   └── log/               # 元富日誌
-│   └── sinopac/               # 永豐證券 API
-│       ├── __init__.py
-│       ├── certs/             # 永豐憑證檔案
-│       └── client.py
-├── config/                    # 配置模組
-│   ├── __init__.py
-│   └── settings.py            # 全域設定
-├── docs/                      # 文件目錄
-│   └── market_data_api_spec.md
-├── log/                       # 全域日誌目錄
-├── models/                    # 資料模型
-│   ├── __init__.py
-│   ├── accounts.py            # 帳戶模型
-│   ├── common.py              # 共用模型
-│   ├── data/
-│   │   └── stock_info.json    # 股票資訊資料
-│   ├── holdings.py            # 持股模型
-│   └── market_data.py         # 市場資料模型
-├── service/                   # 服務層
-│   ├── __init__.py
-│   ├── cli.py                 # 命令列介面
-│   ├── holdings_service.py    # 持股服務
-│   └── storage_service.py     # 儲存服務
-├── test/                      # 測試目錄
-│   ├── conftest.py            # 測試配置
-│   ├── integration/           # 整合測試
-│   │   ├── __init__.py
-│   │   ├── test_esun_integration.py
-│   │   ├── test_fubon_integration.py
-│   │   ├── test_masterlink_integration.py
-│   │   └── test_sinopac_integration.py
-│   ├── log/                   # 測試日誌
-│   └── unit/                  # 單元測試
-│       ├── __init__.py
-│       ├── test_esun_unit.py
-│       ├── test_fubon_unit.py
-│       ├── test_masterlink_unit.py
-│       └── test_shinopac.py
-└── wheels/                    # WHL 檔案目錄
-    └── README.md
-```
+## 安全注意事項
+
+- 不要 commit `.env` 或 `.env.test`
+- 不要 commit `.p12`、`.pfx`、`config.ini`
+- 不要把 API key、API secret、憑證密碼貼到 issue 或 PR
+- `wheels/*.whl` 目前不進 git，請在本機自行準備
 
 ## 授權
+
 MIT

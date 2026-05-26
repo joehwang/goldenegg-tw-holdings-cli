@@ -20,7 +20,7 @@ from cachetools import TTLCache
 from broker.fubon.client import FubonClient
 from broker.esun.client import EsunClient
 from broker.sinopac.client import SinopacClient
-from broker.masterlink.client import MasterlinkClient
+from broker.tssco.client import TsscoClient
 from models.holdings import Holdings, Position
 from models.accounts import Account
 
@@ -76,7 +76,7 @@ class HoldingsService:
             'fubon': FubonClient,
             'esun': EsunClient,
             'sinopac': SinopacClient,
-            'masterlink': MasterlinkClient
+            'tssco': TsscoClient
         }
         self.executor = ThreadPoolExecutor(max_workers=4)
         
@@ -337,7 +337,7 @@ class HoldingsService:
             {"code": "fubon", "name": "富邦證券", "status": "ready"},
             {"code": "esun", "name": "玉山證券", "status": "ready"},
             {"code": "sinopac", "name": "永豐證券", "status": "ready"},
-            {"code": "masterlink", "name": "元富證券", "status": "ready"}
+            {"code": "tssco", "name": "台新證券", "status": "ready"}
         ]
 
     def format_holdings_data_json(self, result: dict, title: str) -> Dict[str, Any]:
@@ -469,7 +469,7 @@ if __name__ == "__main__":
     
     # 步驟 1: 取得資料
     print("🔄 步驟 1: 取得持股資料")
-    holdings_data = service.get_holdings(broker="fubon,esun,sinopac,masterlink")
+    holdings_data = service.get_holdings(broker="fubon,esun,sinopac,tssco")
     print(f"✅ 資料取得成功: {holdings_data.get('success', False)}")
 
     

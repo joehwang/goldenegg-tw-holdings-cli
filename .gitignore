@@ -5,7 +5,7 @@
 **/log/*
 broker/esun/config.ini
 broker/esun/config.simulation.ini
-broker/masterlink/Configs/SYS_SOLACE.ini
+broker/tssco/Configs/SYS_SOLACE.ini
 __pycache__
 .env
 .env.test

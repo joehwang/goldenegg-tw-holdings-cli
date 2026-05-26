@@ -12,7 +12,7 @@ from typing import Any
 from service.holdings_service import HoldingsService
 
 
-DEFAULT_BROKERS = "fubon,esun,sinopac,masterlink"
+DEFAULT_BROKERS = "fubon,esun,sinopac,tssco"
 
 
 def _configure_keyring() -> None:
@@ -95,7 +95,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_BROKERS,
         help=(
             "券商代碼，可用逗號分隔多個券商；支援 fubon, esun, sinopac, "
-            "masterlink, all。預設查詢全部券商。"
+            "tssco, all。預設查詢全部券商。"
         ),
     )
     holdings_parser.add_argument(
