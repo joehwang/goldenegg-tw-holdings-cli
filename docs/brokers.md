@@ -118,8 +118,7 @@ TSSCO_CERT_FILE=<憑證檔名>
 TSSCO_CERT_PWD=<憑證密碼>
 ```
 
-- 新版 Nova API 的 Python SDK 是 `taishin_sdk`。
-- 程式目前仍會讀取舊的 `MASTERLINK_` key 作為相容 fallback；新設定請一律改用 `TSSCO_`。
+- 安裝套件名稱是 `taishin-sdk`，Python import 名稱是 `taishin_sdk`。
 
 測試：
 

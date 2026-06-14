@@ -69,6 +69,12 @@ uv tool install --editable .
 golden-egg --help
 ```
 
+確認台新 SDK 已安裝到目前 `uv` 環境：
+
+```bash
+uv run python -c "from taishin_sdk import TaishinSDK; print(TaishinSDK)"
+```
+
 ## 設定檔模式
 
 本專案透過根目錄 `.env-debug` 決定要讀正式設定還是測試設定。

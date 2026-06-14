@@ -1,4 +1,5 @@
 import unittest
+import importlib.util
 from pathlib import Path
 from broker.tssco.client import TsscoClient
 from integration.helpers import get_holdings_or_skip
@@ -11,6 +12,9 @@ class TestTsscoIntegration(unittest.TestCase):
     
     def setUp(self):
         """測試前檢查環境設定"""
+        if importlib.util.find_spec("taishin_sdk") is None:
+            self.skipTest("找不到 taishin_sdk，跳過台新證券整合測試")
+
         # 檢查是否有台新證券 Nova API 的環境檔案
         tssco_env_path = Path(__file__).parent.parent.parent / "broker" / "tssco" / ".env"
         if not tssco_env_path.exists():

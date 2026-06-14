@@ -2,9 +2,23 @@ from broker.base import BrokerClient, BrokerSettings
 from pydantic import ConfigDict
 from pathlib import Path
 from unittest.mock import Mock
-from taishin_sdk import TaishinSDK
 from models.holdings import Holdings, Position
 from models.accounts import Account
+
+
+def _raise_missing_sdk_error(exc: Exception) -> None:
+    raise RuntimeError(
+        "台新證券 SDK taishin-sdk 未安裝。請確認 wheels/taishin_sdk-1.0.2-cp37-abi3-macosx_11_0_arm64.whl 存在，並執行 uv sync。"
+    ) from exc
+
+
+def _import_taishin_sdk():
+    try:
+        from taishin_sdk import TaishinSDK
+    except ModuleNotFoundError as exc:
+        _raise_missing_sdk_error(exc)
+
+    return TaishinSDK
 
 class TsscoSettings(BrokerSettings):
     login_id: str = ""
@@ -20,43 +34,30 @@ class TsscoSettings(BrokerSettings):
         project_root = Path(__file__).parent.parent.parent
         self.cert_file = str(project_root / "broker" / "tssco" / "certs" / self.cert_file)
 
+        TaishinSDK = _import_taishin_sdk()
         return TaishinSDK()
-
-class LegacyTsscoEnvSettings(BrokerSettings):
-    login_id: str = ""
-    login_pwd: str = ""
-    cert_file: str = ""
-    cert_pwd: str = ""
-    model_config = ConfigDict(
-        env_prefix="MASTERLINK_",
-        extra="ignore"
-    )
 
 
 class TsscoClient(BrokerClient):
     def load_settings(self) -> TsscoSettings:
         env_file = TsscoSettings.get_env_file("tssco")
-        settings = TsscoSettings(_env_file=env_file)
-        if all((settings.login_id, settings.login_pwd, settings.cert_file, settings.cert_pwd)):
-            return settings
-
-        legacy_settings = LegacyTsscoEnvSettings(_env_file=env_file)
-        for field in ("login_id", "login_pwd", "cert_file", "cert_pwd"):
-            if not getattr(settings, field):
-                setattr(settings, field, getattr(legacy_settings, field))
-
-        return settings
+        return TsscoSettings(_env_file=env_file)
 
     def get_holdings(self) -> Holdings:
         """取得持股資訊，回傳標準 Holdings 格式"""
-        sdk = self.settings.create_sdk()
+        try:
+            sdk = self.settings.create_sdk()
+        except ModuleNotFoundError as exc:
+            _raise_missing_sdk_error(exc)
 
         # 登入並取得帳戶
         accounts = sdk.login(self.settings.login_id, self.settings.login_pwd,
                             self.settings.cert_file, self.settings.cert_pwd)
         
         if not accounts:
-            raise Exception("找不到台新證券帳戶")
+            raise RuntimeError(
+                "找不到台新證券帳戶。請確認登入資料、憑證、API 簽署是否已生效，且首次使用者已完成 register_api_auth。"
+            )
             
         acc = accounts[0]
         

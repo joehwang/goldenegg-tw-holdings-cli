@@ -11,16 +11,13 @@
 
 from typing import List, Dict, Optional, Literal, Any
 from datetime import datetime
+from importlib import import_module
 import asyncio
 import json
 import pprint
 from concurrent.futures import ThreadPoolExecutor
 from cachetools import TTLCache
 
-from broker.fubon.client import FubonClient
-from broker.esun.client import EsunClient
-from broker.sinopac.client import SinopacClient
-from broker.tssco.client import TsscoClient
 from models.holdings import Holdings, Position
 from models.accounts import Account
 
@@ -73,10 +70,10 @@ class HoldingsService:
             cache_maxsize: 快取最大項目數，預設 50 個
         """
         self.brokers = {
-            'fubon': FubonClient,
-            'esun': EsunClient,
-            'sinopac': SinopacClient,
-            'tssco': TsscoClient
+            'fubon': 'broker.fubon.client:FubonClient',
+            'esun': 'broker.esun.client:EsunClient',
+            'sinopac': 'broker.sinopac.client:SinopacClient',
+            'tssco': 'broker.tssco.client:TsscoClient'
         }
         self.executor = ThreadPoolExecutor(max_workers=4)
         
@@ -217,13 +214,12 @@ class HoldingsService:
     async def _get_single_broker_holdings(self, broker_code: str) -> Optional[Holdings]:
         """取得單一券商持股資料"""
         try:
-            client_class = self.brokers[broker_code]
             loop = asyncio.get_event_loop()
             
             holdings = await loop.run_in_executor(
                 self.executor,
                 self._sync_get_holdings,
-                client_class
+                broker_code
             )
             return holdings
         except Exception as e:
@@ -250,8 +246,14 @@ class HoldingsService:
         
         return results
     
-    def _sync_get_holdings(self, client_class) -> Holdings:
+    def _resolve_broker_client(self, broker_code: str):
+        module_path, class_name = self.brokers[broker_code].split(":", 1)
+        module = import_module(module_path)
+        return getattr(module, class_name)
+
+    def _sync_get_holdings(self, broker_code: str) -> Holdings:
         """同步執行券商 API 呼叫"""
+        client_class = self._resolve_broker_client(broker_code)
         client = client_class()
         return client.get_holdings()
     

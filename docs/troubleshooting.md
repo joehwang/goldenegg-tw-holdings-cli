@@ -36,6 +36,12 @@ uv sync
 uv tool install --editable . --reinstall
 ```
 
+如果要確認目前 `uv` 環境真的已安裝成功，可執行：
+
+```bash
+uv run python -c "from taishin_sdk import TaishinSDK; print(TaishinSDK)"
+```
+
 ## `No module named fubon_neo`
 
 代表目前環境沒有安裝富邦 SDK。
@@ -140,6 +146,8 @@ uv run python -c "import importlib.metadata as m; print(m.version('taishin-sdk')
 - 申請憑證
 - 簽署 API 使用風險暨聲明書
 - `register_api_auth`
+
+另外，官方文件提到簽署完成後可能不會立即生效，常見情況是隔一天才可正常使用。
 
 ## `uv sync` 找不到 wheel
 
